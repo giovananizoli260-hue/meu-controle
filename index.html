@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#171525"><meta name="description" content="Organize suas dívidas e planeje sua quitação.">
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg">
+<title>Meu Controle — Dívidas</title>
+<style>
+:root{--bg:#11111b;--card:#1b1b29;--border:#302f42;--text:#efedf9;--muted:#a5a2bb;--accent:#7968e8;--accent2:#a99cff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif;padding:16px 14px 30px}
+main{max-width:760px;margin:auto}.header{display:flex;justify-content:space-between;align-items:center;margin:4px 0 18px}.brand{font-size:22px;font-weight:800}.sub{color:var(--muted);font-size:13px}
+nav{display:flex;gap:8px;overflow:auto;margin:14px 0 18px}.tab{border:1px solid var(--border);background:var(--card);color:var(--muted);border-radius:12px;padding:11px 14px;white-space:nowrap}.tab.active{background:var(--accent);border-color:var(--accent);color:white}
+.panel{display:none}.panel.active{display:block}.card{background:var(--card);border:1px solid var(--border);border-radius:17px;padding:17px;margin:12px 0}
+.total-card{background:linear-gradient(140deg,#705ee0,#44358f);border:0}.total-label{font-size:13px}.total{font-size:32px;font-weight:800;margin:8px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{font-size:24px;font-weight:750;margin-top:5px}
+label{display:block;font-size:13px;color:var(--muted);margin:9px 0 5px}input,select{width:100%;border:1px solid #3c3a50;border-radius:11px;padding:12px;background:#13131f;color:var(--text);font:inherit}
+button{font:inherit;cursor:pointer}.btn{border:0;border-radius:11px;padding:11px 14px;background:var(--accent);color:white;font-weight:700}.btn.secondary{background:#302e43;color:#e5e2f8}.btn.delete{background:#492c3c;color:#ffd0df}.btn.full{width:100%;margin-top:10px}
+.debt-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border)}.debt-row:last-child{border:0}.badge{display:inline-block;background:#302d48;color:#cbc3ff;border-radius:20px;font-size:11px;padding:5px 8px;margin-top:4px}.actions{margin-top:5px}.actions button{font-size:12px;padding:6px 9px;margin-left:4px}
+.muted{color:var(--muted);font-size:13px}.empty{text-align:center;color:var(--muted);padding:18px}.result-days{font-size:36px;font-weight:800;color:var(--accent2);margin:10px 0}
+.progress{height:8px;border-radius:20px;background:#343148;overflow:hidden;margin:12px 0}.progress span{display:block;height:100%;background:#a194ff}
+.foot{text-align:center;color:#817f98;font-size:11px;margin-top:18px}.small{font-size:12px;color:var(--muted)}
+@media(min-width:600px){body{padding:24px}.total{font-size:38px}}
+</style></head>
+<body><main>
+<header class="header"><div><div class="brand">💜 Meu Controle</div><div class="sub">Organize suas dívidas com calma, um passo de cada vez.</div></div></header>
+<nav><button class="tab active" data-tab="summary">Resumo</button><button class="tab" data-tab="debts">Dívidas</button><button class="tab" data-tab="calc">Calculadora</button></nav>
+<section id="summary" class="panel active">
+<div class="card total-card"><div class="total-label">Total das dívidas restantes</div><div class="total" id="total">R$ 0,00</div><div class="total-label" id="count">0 dívidas</div></div>
+<div class="grid"><div class="card"><div class="muted">Dívidas cadastradas</div><div class="stat" id="activeCount">0</div></div><div class="card"><div class="muted">Categorias</div><div class="stat" id="catCount">0</div></div></div>
+<div class="card"><b>Suas pendências</b><div id="summaryList"></div><button class="btn full" onclick="tabTo('debts')">+ Adicionar dívida</button></div>
+<div class="card"><b>💡 Lembrete</b><p class="muted">Confira se suas dívidas têm juros ou vencimentos. A calculadora é uma estimativa e não substitui as condições de cada credor.</p></div></section>
+<section id="debts" class="panel">
+<div class="card"><b id="formTitle">Adicionar dívida</b><form id="debtForm">
+<label>Nome da dívida</label><input id="name" maxlength="60" placeholder="Ex.: Loja, cartão, empréstimo" required>
+<label>Valor atual (R$)</label><input id="value" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="Ex.: 150,00" required>
+<label>Categoria</label><select id="category"><option>Cartão</option><option>Empréstimo</option><option>Compras</option><option>Contas</option><option>Família</option><option>Outros</option></select>
+<button class="btn full" id="saveBtn">Salvar dívida</button><button type="button" class="btn secondary full" id="cancelBtn" hidden>Cancelar edição</button></form></div>
+<div class="card"><div class="sub" id="listCount">Lista de dívidas</div><div id="debtList"></div></div></section>
+<section id="calc" class="panel"><div class="card"><b>🧮 Simular quitação</b><p class="muted">Quanto você pretende separar para pagar suas dívidas por dia?</p><label>Valor por dia (R$)</label><input id="daily" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="Ex.: 20"><button class="btn full" id="calcBtn">Calcular</button></div><div class="card" id="calcResult"><div class="empty">Digite um valor diário para calcular o prazo estimado.</div></div><div class="card"><b>Sobre a estimativa</b><p class="muted">O cálculo considera o total atual dividido pelo valor diário, sem juros extras, multas ou novas dívidas. Se houver juros, o prazo real pode ser maior.</p></div></section>
+<div class="foot">Seus dados são guardados localmente neste navegador. Exporte ou anote seus registros para não perdê-los.</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);let debts=[];let editingId=null;
+try{debts=JSON.parse(localStorage.getItem('mc-debts')||'[]')}catch(e){debts=[]}
+const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+function persist(){localStorage.setItem('mc-debts',JSON.stringify(debts))}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function tabTo(t){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===t))}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>tabTo(b.dataset.tab));
+function render(){let total=debts.reduce((s,d)=>s+Number(d.value),0);$('total').textContent=money(total);$('count').textContent=`${debts.length} dívida(s) cadastrada(s)`;$('activeCount').textContent=debts.length;$('catCount').textContent=new Set(debts.map(d=>d.category)).size;$('listCount').textContent=`${debts.length} item(ns)`;
+const row=d=>`<div class="debt-row"><div><b>${escapeHTML(d.name)}</b><br><span class="badge">${escapeHTML(d.category)}</span></div><div style="text-align:right"><b>${money(d.value)}</b><div class="actions"><button class="btn secondary" onclick="editDebt('${d.id}')">Editar</button><button class="btn delete" onclick="removeDebt('${d.id}')">Excluir</button></div></div></div>`;
+$('debtList').innerHTML=debts.map(row).join('')||'<div class="empty">Você ainda não cadastrou dívidas.</div>';$('summaryList').innerHTML=debts.slice(0,5).map(d=>`<div class="debt-row"><div>${escapeHTML(d.name)}<br><span class="badge">${escapeHTML(d.category)}</span></div><b>${money(d.value)}</b></div>`).join('')||'<div class="empty">Cadastre sua primeira dívida.</div>'}
+$('debtForm').onsubmit=e=>{e.preventDefault();let name=$('name').value.trim(),value=Number($('value').value),category=$('category').value;if(!name||value<=0)return;let debt={id:editingId||String(Date.now()),name,value,category};if(editingId){debts=debts.map(d=>d.id===editingId?debt:d)}else debts.push(debt);editingId=null;persist();render();resetForm()};
+function resetForm(){$('debtForm').reset();$('formTitle').textContent='Adicionar dívida';$('saveBtn').textContent='Salvar dívida';$('cancelBtn').hidden=true}
+$('cancelBtn').onclick=()=>{editingId=null;resetForm()};
+window.editDebt=id=>{let d=debts.find(x=>x.id===id);if(!d)return;editingId=id;$('name').value=d.name;$('value').value=d.value;$('category').value=d.category;$('formTitle').textContent='Editar dívida';$('saveBtn').textContent='Salvar alterações';$('cancelBtn').hidden=false;tabTo('debts')};
+window.removeDebt=id=>{if(confirm('Excluir essa dívida do seu registro?')){debts=debts.filter(d=>d.id!==id);persist();render()}};
+$('calcBtn').onclick=()=>{let daily=Number($('daily').value),total=debts.reduce((s,d)=>s+Number(d.value),0),box=$('calcResult');if(daily<=0){box.innerHTML='<div class="empty">Digite um valor diário válido.</div>';return}if(total<=0){box.innerHTML='<div class="empty">Cadastre suas dívidas antes de calcular.</div>';return}let days=Math.ceil(total/daily),date=new Date();date.setDate(date.getDate()+days);box.innerHTML=`<div class="muted">Prazo estimado para quitar</div><div class="result-days">${days} dias</div><b>${money(total)}</b><div class="progress"><span style="width:${Math.min(100,daily/total*100)}%"></span></div><div class="muted">Separando ${money(daily)} por dia</div><div class="card" style="margin-top:12px;background:#29283a"><div class="muted">Data aproximada</div><b style="font-size:19px">${date.toLocaleDateString('pt-BR')}</b></div><div class="small">Estimativa sem juros adicionais ou alterações nos valores.</div>`};
+render();
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
